@@ -23,6 +23,6 @@ func GetStatus(status int) string {
 	return start
 }
 
-func GetErrorStatus(status int, err error) string {
+func GetErrorStatus(status int, err any) string {
 	return fmt.Sprintf("%s、errpr信息：%s", GetStatus(status), err)
 }
