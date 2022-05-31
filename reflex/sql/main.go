@@ -110,7 +110,7 @@ func getStructValue(value reflect.Value, fiName string, out []string) []string {
 func getStructAllValue(value reflect.Value, fiName string, out []string) []string {
 	//这里面就有三种状态了 1.struct对象返还内容 2.基本类型返还值  3.struct对象内容返还
 	tag, b, val := isStructValue(value, fiName)
-
+	//目前按照if else判断，后期改成单个判断
 	if tag {
 		out = append(out, fmt.Sprintf("%v", value.FieldByName(fiName)))
 	} else {
