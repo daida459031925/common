@@ -68,6 +68,10 @@ func getNumField(value reflect.Value, index int) []string {
 				out = getStructKey(value, fi.Name, tagv, out)
 			case 1:
 				out = getStructValue(value, fi.Name, out)
+			case 3:
+				out = getStructAllKey(tagv, out)
+			case 4:
+				out = getStructAllValue(value, fi.Name, out)
 			}
 		}
 	}
@@ -78,8 +82,14 @@ func getStructKey(value reflect.Value, fiName string, tagv string, out []string)
 	//如果里面返还的是结构体，那么执行里面内容
 	a, b, _ := isStructValue(value, fiName)
 	if a || b {
-		out = append(out, tagv)
+		out = getStructAllKey(tagv, out)
 	}
+	return out
+}
+
+//返还所有key
+func getStructAllKey(tagv string, out []string) []string {
+	out = append(out, tagv)
 	return out
 }
 
@@ -92,6 +102,19 @@ func getStructValue(value reflect.Value, fiName string, out []string) []string {
 
 	if b {
 		out = append(out, val)
+	}
+
+	return out
+}
+
+func getStructAllValue(value reflect.Value, fiName string, out []string) []string {
+	//这里面就有三种状态了 1.struct对象返还内容 2.基本类型返还值  3.struct对象内容返还
+	_, b, val := isStructValue(value, fiName)
+
+	if b {
+		out = append(out, val)
+	} else {
+		out = append(out, "null")
 	}
 
 	return out
