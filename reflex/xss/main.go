@@ -24,7 +24,7 @@ func XssUtilInit(xssType reflex.XssType, tagType reflex.TagType, data any, filte
 	return xssUtil{Data: data, XssType: xssType, TagType: tagType, Filter: filter}
 }
 
-func (x xssUtil) xssCode() {
+func (x xssUtil) xssCode() any {
 	//获取对象所有内容
 	//t := reflect.TypeOf(data)
 	v := reflect.ValueOf(x.Data)
@@ -41,6 +41,7 @@ func (x xssUtil) xssCode() {
 	case reflex.XssUnEscape:
 		unEscapeString(v, "", nil)
 	}
+	return x.Data
 }
 
 func fieldStruct(value reflect.Value, xssType reflex.XssType, tagType reflex.TagType, filter []string) {
@@ -71,7 +72,7 @@ func fieldSlice(value reflect.Value, xssType reflex.XssType, tagType reflex.TagT
 	}
 }
 
-//编码 " => &#34;
+// 编码 " => &#34;
 func escapeString(value reflect.Value, name string, filter []string) {
 	if value.Kind() == reflect.String {
 		if filter != nil && len(filter) > 0 {
@@ -85,7 +86,7 @@ func escapeString(value reflect.Value, name string, filter []string) {
 	}
 }
 
-//解码 &#34; => "
+// 解码 &#34; => "
 func unEscapeString(value reflect.Value, name string, filter []string) {
 	if value.Kind() == reflect.String {
 		if filter != nil && len(filter) > 0 {
