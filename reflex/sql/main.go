@@ -3,15 +3,20 @@ package sql
 import (
 	"errors"
 	"fmt"
+	"github.com/daida459031925/common/reflex"
 	"reflect"
 	"strconv"
 )
+
+/**
+解决问题：手动拼接sql字符串 中的 key value 字符串问题
+*/
 
 //返还struce 类型所有0:key 1:value
 func RawField(in any, index int) ([]string, error) {
 
 	v := reflect.ValueOf(in)
-	//这不知道是干什么的 但是go-zero里面写了
+	//目的是将指针类型的转换成实在的数据
 	if v.Kind() == reflect.Ptr {
 		v = v.Elem()
 	}
@@ -51,7 +56,7 @@ func getNumField(value reflect.Value, index int) []string {
 	for i := 0; i < value.NumField(); i++ {
 		//获取对象中获取key value gets us a StructField
 		fi := typ.Field(i)
-		tagv := fi.Tag.Get("db")
+		tagv := fi.Tag.Get(fmt.Sprintf("%s", reflex.Db))
 		switch tagv {
 		case "-":
 			continue
