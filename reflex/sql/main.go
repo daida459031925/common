@@ -12,7 +12,7 @@ import (
 解决问题：手动拼接sql字符串 中的 key value 字符串问题
 */
 
-//返还struce 类型所有0:key 1:value
+// 返还struce 类型所有0:key 1:value
 func RawField(in any, index int) ([]string, error) {
 
 	v := reflect.ValueOf(in)
@@ -23,7 +23,7 @@ func RawField(in any, index int) ([]string, error) {
 
 	//如果make 切片 类型
 	if v.Kind() == reflect.Slice {
-		return GetField(v, index), nil
+		return getField(v, index), nil
 		//panic(fmt.Errorf("ToMap only accepts structs; got %T", v))
 	}
 
@@ -38,8 +38,8 @@ func RawField(in any, index int) ([]string, error) {
 	return nil, errors.New("无法获取")
 }
 
-//返还slice 类型所有values
-func GetField(in reflect.Value, index int) []string {
+// 返还slice 类型所有values
+func getField(in reflect.Value, index int) []string {
 	out := make([]string, 0)
 	for i := 0; i < in.Len(); i++ {
 		value := in.Index(i)
@@ -48,7 +48,7 @@ func GetField(in reflect.Value, index int) []string {
 	return out
 }
 
-//返还struce 类型所有0:key 1:value
+// 返还struce 类型所有0:key 1:value
 func getNumField(value reflect.Value, index int) []string {
 	out := make([]string, 0)
 	//找到这个对象的类型
@@ -92,7 +92,7 @@ func getStructKey(value reflect.Value, fiName string, tagv string, out []string)
 	return out
 }
 
-//返还所有key
+// 返还所有key
 func getStructAllKey(tagv string, out []string) []string {
 	out = append(out, tagv)
 	return out
@@ -129,8 +129,8 @@ func getStructAllValue(value reflect.Value, fiName string, out []string) []strin
 	return out
 }
 
-//针对db内容
-//第一个返回值当前这个对象是基本类型，第二个返回值 这个对象参数是否可用， 第三个参数对象返还值内容
+// 针对db内容
+// 第一个返回值当前这个对象是基本类型，第二个返回值 这个对象参数是否可用， 第三个参数对象返还值内容
 func isStructValue(value reflect.Value, fiName string) (bool, bool, string) {
 	if value.FieldByName(fiName).Kind() == reflect.Struct {
 		//如果里面返还的是结构体，那么执行里面内容
