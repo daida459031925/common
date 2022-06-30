@@ -1,8 +1,8 @@
 package sql
 
 import (
-	"errors"
 	"fmt"
+	err "github.com/daida459031925/common/error"
 	"github.com/daida459031925/common/reflex"
 	"reflect"
 	"strconv"
@@ -15,27 +15,26 @@ import (
 // 返还struce 类型所有0:key 1:value
 func RawField(in any, index int) ([]string, error) {
 
-	v := reflect.ValueOf(in)
+	//v := reflect.ValueOf(in)
+	ref := reflex.GetRef(in)
 	//目的是将指针类型的转换成实在的数据
-	if v.Kind() == reflect.Ptr {
-		v = v.Elem()
-	}
+	v := ref.GetPointerData(false)
 
 	//如果make 切片 类型
-	if v.Kind() == reflect.Slice {
+	if reflex.IsSlice(v) {
 		return getField(v, index), nil
 		//panic(fmt.Errorf("ToMap only accepts structs; got %T", v))
 	}
 
 	//如果时结构体
-	if v.Kind() == reflect.Struct {
+	if reflex.IsStruct(v) {
 		//panic(fmt.Errorf("ToMap only accepts structs; got %T", v))
 		return getNumField(v, index), nil
 	}
 
 	//fmt.Sprintf("field %d, type %s, key %s ,value %v",
 	//				i, t.Field(i).Type, t.Field(i).Name, v.FieldByName(t.Field(i).Name))
-	return nil, errors.New("无法获取")
+	return nil, err.New("无法获取")
 }
 
 // 返还slice 类型所有values
@@ -132,7 +131,7 @@ func getStructAllValue(value reflect.Value, fiName string, out []string) []strin
 // 针对db内容
 // 第一个返回值当前这个对象是基本类型，第二个返回值 这个对象参数是否可用， 第三个参数对象返还值内容
 func isStructValue(value reflect.Value, fiName string) (bool, bool, string) {
-	if value.FieldByName(fiName).Kind() == reflect.Struct {
+	if reflex.IsStruct(value.FieldByName(fiName)) {
 		//如果里面返还的是结构体，那么执行里面内容
 		refStruct := value.FieldByName(fiName)
 

@@ -27,11 +27,9 @@ func XssUtilInit(xssType reflex.XssType, tagType reflex.TagType, data any, filte
 func (x xssUtil) xssCode() any {
 	//获取对象所有内容
 	//t := reflect.TypeOf(data)
-	v := reflect.ValueOf(x.Data)
+	ref := reflex.GetRef(x.Data)
 	//目的是将指针类型的转换成实在的数据
-	if v.Kind() == reflect.Ptr {
-		v = v.Elem()
-	}
+	v := ref.GetPointerData(false)
 
 	fieldStruct(v, x.XssType, x.TagType, x.Filter)
 	fieldSlice(v, x.XssType, x.TagType, x.Filter)
@@ -45,7 +43,7 @@ func (x xssUtil) xssCode() any {
 }
 
 func fieldStruct(value reflect.Value, xssType reflex.XssType, tagType reflex.TagType, filter []string) {
-	if value.Kind() == reflect.Struct {
+	if reflex.IsStruct(value) {
 		for j := 0; j < value.NumField(); j++ {
 			v := value.Field(j)
 			//获取当前对象名称key
@@ -64,7 +62,7 @@ func fieldStruct(value reflect.Value, xssType reflex.XssType, tagType reflex.Tag
 }
 
 func fieldSlice(value reflect.Value, xssType reflex.XssType, tagType reflex.TagType, filter []string) {
-	if value.Kind() == reflect.Slice {
+	if reflex.IsSlice(value) {
 		for i := 0; i < value.Len(); i++ {
 			v := value.Index(i)
 			fieldStruct(v, xssType, tagType, filter)
@@ -74,7 +72,7 @@ func fieldSlice(value reflect.Value, xssType reflex.XssType, tagType reflex.TagT
 
 // 编码 " => &#34;
 func escapeString(value reflect.Value, name string, filter []string) {
-	if value.Kind() == reflect.String {
+	if reflex.IsString(value) {
 		if filter != nil && len(filter) > 0 {
 			for i := range filter {
 				if filter[i] == name {
@@ -88,7 +86,7 @@ func escapeString(value reflect.Value, name string, filter []string) {
 
 // 解码 &#34; => "
 func unEscapeString(value reflect.Value, name string, filter []string) {
-	if value.Kind() == reflect.String {
+	if reflex.IsString(value) {
 		if filter != nil && len(filter) > 0 {
 			for i := range filter {
 				if filter[i] == name {
