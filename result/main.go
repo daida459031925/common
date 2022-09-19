@@ -28,3 +28,7 @@ func Ok(data any) Result {
 func Error(msg string) Result {
 	return Build(500, msg, nil)
 }
+
+func ErrorData(msg string, data any) Result {
+	return Build(500, msg, data)
+}
