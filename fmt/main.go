@@ -54,7 +54,7 @@ func ParseFloat(str string) (float64, error) {
 	return strconv.ParseFloat(str, 64)
 }
 
-// ParseUnPointer 使用条件，传入一个任意类型的值，返还指定泛型内容，并拆开指针返还真实值
+// ParseUnPointer 使用条件，传入一个任意类型的值，返还指定泛型内容，并拆开指针返还真实值 返还的对象是一个新的对象
 func ParseUnPointer[T any](data any) (T, error) {
 
 	var e error
