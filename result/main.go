@@ -61,24 +61,12 @@ func ErrorData(msg string, data any) Result {
 }
 
 // 添加方法
-func (result *Result) setFunc(f func(a3 any) any) *Result {
-	fun := func() any {
-		defer func() {
-			r := recover()
-			if r != nil {
-				result.Msg = r.(error).Error()
-				result.Status = ERR
-				result.Data = nil
-			}
-		}()
-		return f(result.Data)
-	}
-	result.funcSlice = append(result.funcSlice, fun)
-	return result
+func (result *Result) setFunc(f func(a any) any) *Result {
+	return result.setFuncErr(f, nil)
 }
 
 // 添加方法并设置错误信息
-func (result *Result) setFuncErr(f func(a3 any) any, e error) *Result {
+func (result *Result) setFuncErr(f func(a any) any, e error) *Result {
 	fun := func() any {
 		defer func() {
 			r := recover()
