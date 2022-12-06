@@ -55,26 +55,23 @@ func ParseFloat(str string) (float64, error) {
 }
 
 // ParseUnPointer 使用条件，传入一个任意类型的值，返还指定泛型内容，并拆开指针返还真实值
-func ParseUnPointer[T any](data any) (*T, error) {
+func ParseUnPointer[T any](data any) (T, error) {
 
-	var t *T
 	var e error
 
 	r, ok := data.(T)
-	if !ok {
-		var r1, ok1 = data.(*T)
-		if ok1 {
-			t = r1
+	if ok {
+		return r, e
+	}
+
+	r1, ok1 := data.(*T)
+	if ok1 {
+		var aaa any = *r1
+		r2, ok2 := aaa.(T)
+		if ok2 {
+			return r2, e
 		}
 	}
-
-	if ok {
-		t = &r
-	}
-
-	if t == nil {
-		e = err.New("解析失败")
-	}
-
-	return t, e
+	var t T
+	return t, err.New("解析失败")
 }
