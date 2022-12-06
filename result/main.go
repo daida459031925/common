@@ -60,13 +60,13 @@ func ErrorData(msg string, data any) Result {
 	return Build(ERR, msg, data)
 }
 
-// 添加方法
-func (result *Result) setFunc(f func(a any) any) *Result {
-	return result.setFuncErr(f, nil)
+// SetFunc 添加方法
+func (result *Result) SetFunc(f func(a any) any) *Result {
+	return result.SetFuncErr(f, nil)
 }
 
-// 添加方法并设置错误信息
-func (result *Result) setFuncErr(f func(a any) any, e error) *Result {
+// SetFuncErr 添加方法并设置错误信息
+func (result *Result) SetFuncErr(f func(a any) any, e error) *Result {
 	fun := func() any {
 		defer func() {
 			r := recover()
@@ -85,7 +85,8 @@ func (result *Result) setFuncErr(f func(a any) any, e error) *Result {
 	return result
 }
 
-func (result *Result) exec() Result {
+// Exec 执行方法
+func (result *Result) Exec() Result {
 	f := result.funcSlice
 	if f != nil {
 		for i := range f {
