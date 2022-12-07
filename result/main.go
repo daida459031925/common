@@ -20,9 +20,9 @@ const (
 	LAYOUT = "2006-01-02 15:04:05.999999999"
 )
 
-func Build(status int16, msg string, data any) Result {
+func Build(status int16, msg string, data any) *Result {
 	now := time.Now()
-	return Result{
+	return &Result{
 		Status: status,
 		Msg:    msg,
 		Data:   data,
@@ -31,32 +31,32 @@ func Build(status int16, msg string, data any) Result {
 }
 
 // Ok 默认添加正常
-func Ok() Result {
+func Ok() *Result {
 	return Build(OK, "", nil)
 }
 
 // OkData 默认添加正常添加数据
-func OkData(data any) Result {
+func OkData(data any) *Result {
 	return Build(OK, "", data)
 }
 
 // OkDataMsg 通过并返还数据以及信息
-func OkDataMsg(data any, msg string) Result {
+func OkDataMsg(data any, msg string) *Result {
 	return Build(OK, msg, data)
 }
 
 // Error 默认错误
-func Error() Result {
+func Error() *Result {
 	return Build(ERR, "", nil)
 }
 
 // ErrorMsg 默认错误
-func ErrorMsg(msg string) Result {
+func ErrorMsg(msg string) *Result {
 	return Build(ERR, msg, nil)
 }
 
 // ErrorData 默认错误并返还数据
-func ErrorData(msg string, data any) Result {
+func ErrorData(msg string, data any) *Result {
 	return Build(ERR, msg, data)
 }
 
