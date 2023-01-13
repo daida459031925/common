@@ -19,8 +19,19 @@ func BenchmarkImage(b *testing.B) {
 }
 
 // 普通测试
-func TestImage(t *testing.T) {
+func TestImageNet(t *testing.T) {
 	r := image.GetImageFromNet("https://bkimg.cdn.bcebos.com/pic/79f0f736afc37931207276aee1c4b74543a9111a")
+	fmt.Printlnf("logs: %s %s", r.Msg, "?")
+	fmt.Println(r.Date)
+	if r.Status == result.OK {
+		rimage := r.Data.(ima.Image)
+		fmt.Println(rimage.Bounds().Min)
+		fmt.Println(rimage.Bounds().Max)
+	}
+}
+
+func TestImageLocal(t *testing.T) {
+	r := image.GetImageLoad("/home/sga/图片/remmina_快速连接_daida.tpddns.cn:45901_2022128-14717.405471.png")
 	fmt.Printlnf("logs: %s %s", r.Msg, "?")
 	fmt.Println(r.Date)
 	if r.Status == result.OK {
