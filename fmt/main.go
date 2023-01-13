@@ -1,9 +1,21 @@
 package fmt
 
 import (
+	"fmt"
 	err "github.com/daida459031925/common/error"
 	"strconv"
 )
+
+// 控制台输出
+func Println(a ...any) {
+	fmt.Println(a...)
+}
+
+// 控制台输出
+func Printlnf(s string, a ...any) {
+	fmt.Printf(s, a...)
+	fmt.Println()
+}
 
 //func FmtValue(value reflect.Value) string {
 //	return fmt.Sprintf("%v", value)

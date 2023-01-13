@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"github.com/daida459031925/common/fmt"
 	"github.com/daida459031925/common/image"
 	"github.com/daida459031925/common/result"
 	ima "image"
@@ -14,14 +14,14 @@ import (
 // B/op标识每次操作分配多少字节
 func BenchmarkImage(b *testing.B) {
 	r := image.GetImageFromNet("http://cloudcache.tencent-cloud.com/open_proj/proj_qcloud_v2/community/portal/css/img/wechat-qr.jpg")
-	fmt.Println(r.Msg)
+	fmt.Printlnf("%s", r.Msg)
 	fmt.Println(r.Date)
 }
 
 // 普通测试
 func TestImage(t *testing.T) {
-	r := image.GetImageFromNet("https://bkimg.cdn.bcebos.com/pic/622762d0f703918f750042aa5e3d269758eec4f9")
-	fmt.Println(r.Msg)
+	r := image.GetImageFromNet("https://bkimg.cdn.bcebos.com/pic/79f0f736afc37931207276aee1c4b74543a9111a")
+	fmt.Printlnf("logs: %s %s", r.Msg, "?")
 	fmt.Println(r.Date)
 	if r.Status == result.OK {
 		rimage := r.Data.(ima.Image)
