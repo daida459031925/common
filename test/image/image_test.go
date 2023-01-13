@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"github.com/daida459031925/common/image"
+	"github.com/daida459031925/common/result"
+	ima "image"
 	"testing"
 )
 
@@ -18,7 +20,12 @@ func BenchmarkImage(b *testing.B) {
 
 // 普通测试
 func TestImage(t *testing.T) {
-	r := image.GetImageFromNet("http://cloudcache.tencent-cloud.com/open_proj/proj_qcloud_v2/community/portal/css/img/wechat-qr.jpg")
+	r := image.GetImageFromNet("https://bkimg.cdn.bcebos.com/pic/622762d0f703918f750042aa5e3d269758eec4f9")
 	fmt.Println(r.Msg)
 	fmt.Println(r.Date)
+	if r.Status == result.OK {
+		rimage := r.Data.(ima.Image)
+		fmt.Println(rimage.Bounds().Min)
+		fmt.Println(rimage.Bounds().Max)
+	}
 }
