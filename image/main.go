@@ -17,9 +17,15 @@ import (
 // 初始化jpeg、png、gif默认使用image解析默认就要加载所有格式图片。莫名其妙解决image bug问题
 // 由于已经知道了image.Decode(res.Body)可以解析网络图片但是目前只能解析jpg、png、gif
 // 为了实现从字符串中拿到这个是什么类型的图片调用对应的方法
-var imageParses = make(map[string]func(r io.Reader) (image.Image, error))
+var imageDecodes = make(map[string]func(r io.Reader) (image.Image, error))
+var imageEncodes = make(map[string]func(w io.Writer, m image.Image) error)
 
 func init() {
+	imageDecode()
+	imageEncode()
+}
+
+func imageDecode() {
 	jpg := func(r io.Reader) (image.Image, error) {
 		return jpeg.Decode(r)
 	}
@@ -32,15 +38,44 @@ func init() {
 		return gif.Decode(r)
 	}
 
-	imageParses["JPG"] = jpg
-	imageParses["JPEG"] = jpg
-	imageParses["PNG"] = png
-	imageParses["GIF"] = gif
+	imageDecodes["JPG"] = jpg
+	imageDecodes["JPEG"] = jpg
+	imageDecodes["PNG"] = png
+	imageDecodes["GIF"] = gif
+
+	imageDecodes["jpg"] = jpg
+	imageDecodes["jpeg"] = jpg
+	imageDecodes["png"] = png
+	imageDecodes["gif"] = gif
+}
+
+func imageEncode() {
+	jpg := func(w io.Writer, m image.Image) error {
+		return jpeg.Encode(w, m, nil)
+	}
+
+	png := func(w io.Writer, m image.Image) error {
+		return png.Encode(w, m)
+	}
+
+	gif := func(w io.Writer, m image.Image) error {
+		return gif.Encode(w, m, nil)
+	}
+
+	imageEncodes["JPG"] = jpg
+	imageEncodes["JPEG"] = jpg
+	imageEncodes["PNG"] = png
+	imageEncodes["GIF"] = gif
+
+	imageEncodes["jpg"] = jpg
+	imageEncodes["jpeg"] = jpg
+	imageEncodes["png"] = png
+	imageEncodes["gif"] = gif
 }
 
 // GetImageFromNet 从远程读取图片
 func GetImageFromNet(url string) result.Result {
-	return result.OkData(url).SetFunc(func(a any) any {
+	return result.OkData(url).SetFuncErr(func(a any) any {
 		s, e := fmt.ParseUnPointer[string](a)
 		err.RuntimeExceptionTF(e != nil, e)
 		res, e := http.Get(s)
@@ -50,7 +85,7 @@ func GetImageFromNet(url string) result.Result {
 		m, _, e := image.Decode(res.Body)
 		err.RuntimeExceptionTF(e != nil, e)
 		return m
-	}).SetFunc(func(a any) any {
+	}, err.New("远程读取文件失败")).SetFunc(func(a any) any {
 		m, e := fmt.ParseUnPointer[image.Image](a)
 		err.RuntimeExceptionTF(e != nil, e)
 		//可以做其他处理
@@ -59,16 +94,18 @@ func GetImageFromNet(url string) result.Result {
 
 }
 
-func GetImageLoad(url string) result.Result {
+func GetImageLoad(url string) (result.Result, string) {
+	imageType := ""
 	return result.OkData(url).SetFunc(func(a any) any {
 		path, e := fmt.ParseUnPointer[string](a)
 		err.RuntimeExceptionTF(e != nil, e)
 		f, e := os.Open(path)
 		err.RuntimeExceptionTF(e != nil, e)
-		m, _, e := image.Decode(bufio.NewReader(f))
+		m, imageTypeName, e := image.Decode(bufio.NewReader(f))
+		imageType = imageTypeName
 		err.RuntimeExceptionTF(e != nil, e)
 		return m
-	}).Exec()
+	}).Exec(), imageType
 }
 
 // Rotate90 旋转90度
@@ -125,5 +162,27 @@ func CenterImage(m image.Image) image.Image {
 		}
 	}
 	return centerImage
+
+}
+
+func NewImage(typeName, path string, srcImage image.Image) {
+	r := result.OkData(typeName).SetFuncErr(func(a any) any {
+		r, e := fmt.ParseUnPointer[string](a)
+		err.RuntimeExceptionTF(e != nil || len(r) <= 0, e)
+		return r
+	}, err.New("图片文件格式不正确")).Exec()
+	if r.Status == result.OK {
+		result.OkData(path).SetFuncErr(func(a any) any {
+			r, e := fmt.ParseUnPointer[string](a)
+			err.RuntimeExceptionTF(e != nil || len(r) <= 0, e)
+			fun := imageEncodes[typeName]
+			err.RuntimeExceptionTF(fun == nil, e)
+			f, e := os.Create(r)
+			err.RuntimeExceptionTF(e != nil, e)
+			e = fun(bufio.NewWriter(f), srcImage)
+			err.RuntimeExceptionTF(e != nil, e)
+			return r
+		}, err.New("图片生成失败")).Exec()
+	}
 
 }

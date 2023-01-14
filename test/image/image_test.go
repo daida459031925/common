@@ -31,12 +31,15 @@ func TestImageNet(t *testing.T) {
 }
 
 func TestImageLocal(t *testing.T) {
-	r := image.GetImageLoad("/home/sga/图片/remmina_快速连接_daida.tpddns.cn:45901_2022128-14717.405471.png")
+	r, imaType := image.GetImageLoad("/home/sga/图片/remmina_快速连接_daida.tpddns.cn:45901_2022128-14717.405471.png")
 	fmt.Printlnf("logs: %s %s", r.Msg, "?")
 	fmt.Println(r.Date)
+	fmt.Println(imaType)
 	if r.Status == result.OK {
 		rimage := r.Data.(ima.Image)
-		fmt.Println(rimage.Bounds().Min)
-		fmt.Println(rimage.Bounds().Max)
+		image.NewImage(imaType, "/home/sga/图片/remmina_快速连接_daida.tpddns.cn:45901_2022128-14717.405472.png", image.Rotate90(rimage))
+		image.NewImage(imaType, "/home/sga/图片/remmina_快速连接_daida.tpddns.cn:45901_2022128-14717.405473.png", image.Rotate180(rimage))
+		image.NewImage(imaType, "/home/sga/图片/remmina_快速连接_daida.tpddns.cn:45901_2022128-14717.405474.png", image.Rotate270(rimage))
+		image.NewImage(imaType, "/home/sga/图片/remmina_快速连接_daida.tpddns.cn:45901_2022128-14717.405475.png", image.CenterImage(rimage))
 	}
 }
