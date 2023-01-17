@@ -5,6 +5,8 @@ import (
 	"github.com/daida459031925/common/image"
 	"github.com/daida459031925/common/result"
 	ima "image"
+	"io"
+	"os"
 	"testing"
 )
 
@@ -20,14 +22,27 @@ func BenchmarkImage(b *testing.B) {
 
 // 普通测试
 func TestImageNet(t *testing.T) {
-	r := image.GetImageFromNet("https://bkimg.cdn.bcebos.com/pic/79f0f736afc37931207276aee1c4b74543a9111a")
-	fmt.Printlnf("logs: %s %s", r.Msg, "?")
-	fmt.Println(r.Date)
-	if r.Status == result.OK {
-		rimage := r.Data.(ima.Image)
-		fmt.Println(rimage.Bounds().Min)
-		fmt.Println(rimage.Bounds().Max)
+	//r := image.GetImageFromNet("https://bkimg.cdn.bcebos.com/pic/79f0f736afc37931207276aee1c4b74543a9111a")
+	//fmt.Printlnf("logs: %s %s", r.Msg, "?")
+	//fmt.Println(r.Date)
+	//if r.Status == result.OK {
+	//	rimage := r.Data.(ima.Image)
+	//	fmt.Println(rimage.Bounds().Min)
+	//	fmt.Println(rimage.Bounds().Max)
+	//}
+	file, e := os.Open("/home/sga/20200609142143.xls")
+	if e != nil {
+		return
 	}
+	fmt.Println(file.Name())
+	i, e := io.ReadAll(file)
+	if e != nil {
+		return
+	}
+	fmt.Println(i)
+	a := [1024]byte{2, 5, 3}
+	b := [1024]byte{2, 3, 5}
+	fmt.Println(a == b)
 }
 
 func TestImageLocal(t *testing.T) {
