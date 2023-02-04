@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"github.com/lxn/win"
 	"os"
+	"syscall"
 	"testing"
 )
 
@@ -31,4 +33,12 @@ func TestOpenExeLocal(t *testing.T) {
 	//if got := p.Signal(Kill); got != ErrProcessDone {
 	//	t.Errorf("got %v want %v", got, ErrProcessDone)
 	//}
+}
+
+func main() {
+	println(FindWindow(`QQ`))
+}
+
+func FindWindow(str string) win.HWND {
+	return win.FindWindow(nil, syscall.StringToUTF16Ptr(str))
 }
