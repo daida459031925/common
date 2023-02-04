@@ -18,12 +18,13 @@ func TestOpenExeLocal(t *testing.T) {
 	//fmt.Println(r.Pid)
 	//r.Kill()
 
-	p, err := os.StartProcess("/home/sga/IdeaProjects/给戴达.docx", []string{"go"}, &os.ProcAttr{})
+	p, err := os.StartProcess("/home/sga/goland-2021.3.1/GoLand-2021.3.1/bin/goland.sh", []string{"go"}, &os.ProcAttr{})
 	if err != nil {
 		t.Errorf("starting test process: %v", err)
 	}
 	fmt.Println(p.Pid)
 	fmt.Println(p.Release())
+	fmt.Println(p)
 	//p.Kill()
 	p.Wait()
 
