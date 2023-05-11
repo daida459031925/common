@@ -1,0 +1,9 @@
+mysql:
+  user: root
+  password: MYSQL
+  host: 192.168.0.101
+  port: 3306
+  dbName:  iotcloud_xj
+  maxConn: 5
+  maxOpen: 5
+  maxTime: 1

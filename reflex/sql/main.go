@@ -12,7 +12,7 @@ import (
 解决问题：手动拼接sql字符串 中的 key value 字符串问题
 */
 
-// 返还struce 类型所有0:key 1:value
+// RawField 返还struce 类型所有0:key 1:value
 func RawField(in any, index int) ([]string, error) {
 
 	//v := reflect.ValueOf(in)

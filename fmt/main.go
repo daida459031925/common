@@ -1,17 +1,18 @@
 package fmt
 
 import (
+	"errors"
 	"fmt"
-	err "github.com/daida459031925/common/error"
 	"strconv"
+	"strings"
 )
 
-// 控制台输出
+// Println 控制台输出
 func Println(a ...any) {
 	fmt.Println(a...)
 }
 
-// 控制台输出
+// Printlnf 控制台输出
 func Printlnf(s string, a ...any) {
 	fmt.Printf(s, a...)
 	fmt.Println()
@@ -85,5 +86,14 @@ func ParseUnPointer[T any](data any) (T, error) {
 		}
 	}
 	var t T
-	return t, err.New("解析失败")
+	return t, errors.New("解析失败")
+}
+
+// Trim 去掉字符串两边的空格
+func Trim(s string) string {
+	return strings.TrimSpace(s)
+}
+
+func Sprintf(format string, a ...any) string {
+	return fmt.Sprintf(format, a...)
 }
