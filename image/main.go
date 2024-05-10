@@ -379,7 +379,7 @@ func calcResizedRect(width int, src image.Rectangle, height int, centerAlign boo
 func resizePic(img image.Image, width int, height int, keepRatio bool, fill int, centerAlign bool) image.Image {
 	outImg := image.NewRGBA(image.Rect(0, 0, width, height))
 	if !keepRatio {
-		draw.BiLinear.Scale(outImg, outImg.Bounds(), img, img.Bounds(), draw.Over, nil)
+		draw.Draw(outImg, outImg.Bounds(), img, img.Bounds(), draw.Over)
 		return outImg
 	}
 
@@ -388,6 +388,6 @@ func resizePic(img image.Image, width int, height int, keepRatio bool, fill int,
 		draw.Draw(outImg, outImg.Bounds(), &image.Uniform{C: fillColor}, image.Point{}, draw.Src)
 	}
 	dst := calcResizedRect(width, img.Bounds(), height, centerAlign)
-	draw.ApproxBiLinear.Scale(outImg, dst.Bounds(), img, img.Bounds(), draw.Over, nil)
+	draw.Draw(outImg, dst.Bounds(), img, img.Bounds(), draw.Over)
 	return outImg
 }
