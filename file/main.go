@@ -12,7 +12,12 @@ func NewConfig[a any](str string) (*a, error) {
 	if e != nil {
 		return nil, e
 	}
-	defer file.Close()
+	defer func(file *os.File) {
+		err := file.Close()
+		if err != nil {
+
+		}
+	}(file)
 
 	yamlFile, e := io.ReadAll(file)
 	if e != nil {

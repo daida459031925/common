@@ -5,19 +5,13 @@ import (
 	err "github.com/daida459031925/common/error"
 	"github.com/daida459031925/common/fmt"
 	"github.com/daida459031925/common/result"
-	"github.com/nfnt/resize"
-	"golang.org/x/sync/errgroup"
 	"image"
-	"image/color"
-	"image/draw"
 	"image/gif"
 	"image/jpeg"
 	"image/png"
 	"io"
 	"net/http"
 	"os"
-	"strconv"
-	"time"
 )
 
 // 初始化jpeg、png、gif默认使用image解析默认就要加载所有格式图片。莫名其妙解决image bug问题
@@ -87,7 +81,12 @@ func GetImageFromNet(url string) result.Result {
 		res, e := http.Get(s)
 		err.RuntimeExceptionTF(e != nil || res.StatusCode != result.OK, e)
 		//从网络获取照片不需要知道图片类型直接可以使用image解析，目前只能解析jpg、png、gif
-		defer res.Body.Close()
+		defer func(Body io.ReadCloser) {
+			err := Body.Close()
+			if err != nil {
+
+			}
+		}(res.Body)
 		m, _, e := image.Decode(res.Body)
 		err.RuntimeExceptionTF(e != nil, e)
 		return m
@@ -194,121 +193,121 @@ func NewImage(typeName, path string, srcImage image.Image) {
 }
 
 // 图片缩放代码
-func main() {
-	img := strconv.Itoa(int(time.Now().UnixNano())) + ".jpeg"
-	f, err := os.Create(img)
-	if err != nil {
-		fmt.Println("Create", err)
-		return
-	}
-	// 把二维码图片合到海报上
-	rgba, err := MergeImageNew("http://img/16028328876241490.jpeg", "http://8134.jpg", 76, 436, 87)
-	if err != nil {
-		fmt.Println("MergeImageNew", err)
-		return
-	}
-	err = jpeg.Encode(f, rgba, nil)
-	if err != nil {
-		fmt.Println("Encode", err)
-		return
-	}
-}
+//func main() {
+//	img := strconv.Itoa(int(time.Now().UnixNano())) + ".jpeg"
+//	f, err := os.Create(img)
+//	if err != nil {
+//		fmt.Println("Create", err)
+//		return
+//	}
+//	// 把二维码图片合到海报上
+//	rgba, err := MergeImageNew("http://img/16028328876241490.jpeg", "http://8134.jpg", 76, 436, 87)
+//	if err != nil {
+//		fmt.Println("MergeImageNew", err)
+//		return
+//	}
+//	err = jpeg.Encode(f, rgba, nil)
+//	if err != nil {
+//		fmt.Println("Encode", err)
+//		return
+//	}
+//}
 
 // MergeImageNew 图片合并 baseUrl:原图图片地址，maskUrl：小图图片地址
-func MergeImageNew(baseUrl, maskUrl string, paddingX int, paddingY int, width uint) (*image.RGBA, error) {
-	eg := errgroup.Group{}
-	var base image.Image
-	eg.Go(func() error {
-		var err error
-		base, err = GetImageFromNet(baseUrl)
-		return err
-	})
-	mask, err := ImageZoom(maskUrl, width)
-	if err != nil {
-		return nil, err
-	}
-	if err = eg.Wait(); err != nil {
-		return nil, err
-	}
-	baseSrcBounds := base.Bounds().Max
-	maskSrcBounds := mask.Bounds().Max
-
-	newWidth := baseSrcBounds.X
-	newHeight := baseSrcBounds.Y
-
-	maskWidth := maskSrcBounds.X
-	maskHeight := maskSrcBounds.Y
-
-	des := image.NewRGBA(image.Rect(0, 0, newWidth, newHeight)) // 底板
-	//首先将一个图片信息存入jpg
-	draw.Draw(des, des.Bounds(), base, base.Bounds().Min, draw.Over)
-	//将另外一张图片信息存入jpg
-	fmt.Println(newHeight, paddingY, maskHeight)
-	draw.Draw(des, image.Rect(paddingX, paddingY, (paddingX+maskWidth), (maskHeight+paddingY)), mask, image.Point{}, draw.Over)
-	return des, nil
-}
+//func MergeImageNew(baseUrl, maskUrl string, paddingX int, paddingY int, width uint) (*image.RGBA, error) {
+//	eg := errgroup.Group{}
+//	var base image.Image
+//	eg.Go(func() error {
+//		var err error
+//		base, err = GetImageFromNet(baseUrl)
+//		return err
+//	})
+//	mask, err := ImageZoom(maskUrl, width)
+//	if err != nil {
+//		return nil, err
+//	}
+//	if err = eg.Wait(); err != nil {
+//		return nil, err
+//	}
+//	baseSrcBounds := base.Bounds().Max
+//	maskSrcBounds := mask.Bounds().Max
+//
+//	newWidth := baseSrcBounds.X
+//	newHeight := baseSrcBounds.Y
+//
+//	maskWidth := maskSrcBounds.X
+//	maskHeight := maskSrcBounds.Y
+//
+//	des := image.NewRGBA(image.Rect(0, 0, newWidth, newHeight)) // 底板
+//	//首先将一个图片信息存入jpg
+//	draw.Draw(des, des.Bounds(), base, base.Bounds().Min, draw.Over)
+//	//将另外一张图片信息存入jpg
+//	fmt.Println(newHeight, paddingY, maskHeight)
+//	draw.Draw(des, image.Rect(paddingX, paddingY, (paddingX+maskWidth), (maskHeight+paddingY)), mask, image.Point{}, draw.Over)
+//	return des, nil
+//}
 
 // GetImageFromNet 从远程读取图片
-func GetImageFromNet(url string) (image.Image, error) {
-	res, err := http.Get(url)
-	if err != nil || res.StatusCode != 200 {
-		return nil, err
-	}
-	defer res.Body.Close()
-	m, _, err := image.Decode(res.Body)
-	return m, err
-}
+//func GetImageFromNet(url string) (image.Image, error) {
+//	res, err := http.Get(url)
+//	if err != nil || res.StatusCode != 200 {
+//		return nil, err
+//	}
+//	defer res.Body.Close()
+//	m, _, err := image.Decode(res.Body)
+//	return m, err
+//}
 
 // ImageZoom 按宽度缩放图片
-func ImageZoom(url string, width uint) (image.Image, error) {
-	m, err := GetImageFromNet(url)
-	if err != nil {
-		return nil, err
-	}
-	if width == 0 {
-		return m, nil
-	}
-	thImg := resize.Resize(width, 0, m, resize.Lanczos3)
-	return thImg, nil
-}
+//func ImageZoom(url string, width uint) (image.Image, error) {
+//	m, err := GetImageFromNet(url)
+//	if err != nil {
+//		return nil, err
+//	}
+//	if width == 0 {
+//		return m, nil
+//	}
+//	thImg := resize.Resize(width, 0, m, resize.Lanczos3)
+//	return thImg, nil
+//}
 
 // 图片缩放
-func main() {
-	f1, err := os.Open("1.jpg")
-	if err != nil {
-		panic(err)
-	}
-	defer f1.Close()
-	f2, err := os.Open("2.jpg")
-	if err != nil {
-		panic(err)
-	}
-	defer f2.Close()
-	f3, err := os.Create("3.jpg")
-	if err != nil {
-		panic(err)
-	}
-	defer f3.Close()
-	m1, err := jpeg.Decode(f1)
-	if err != nil {
-		panic(err)
-	}
-	bounds := m1.Bounds()
-	m2, err := jpeg.Decode(f2)
-	if err != nil {
-		panic(err)
-	}
-	m := image.NewRGBA(bounds)
-	white := color.RGBA{255, 255, 255, 255}
-	draw.Draw(m, bounds, &image.Uniform{white}, image.ZP, draw.Src)
-	draw.Draw(m, bounds, m1, image.ZP, draw.Src)
-	draw.Draw(m, image.Rect(100, 200, 300, 600), m2, image.Pt(250, 60), draw.Src)
-	err = jpeg.Encode(f3, m, &jpeg.Options{90})
-	if err != nil {
-		panic(err)
-	}
-	fmt.Printf("okn")
-}
+//func main() {
+//	f1, err := os.Open("1.jpg")
+//	if err != nil {
+//		panic(err)
+//	}
+//	defer f1.Close()
+//	f2, err := os.Open("2.jpg")
+//	if err != nil {
+//		panic(err)
+//	}
+//	defer f2.Close()
+//	f3, err := os.Create("3.jpg")
+//	if err != nil {
+//		panic(err)
+//	}
+//	defer f3.Close()
+//	m1, err := jpeg.Decode(f1)
+//	if err != nil {
+//		panic(err)
+//	}
+//	bounds := m1.Bounds()
+//	m2, err := jpeg.Decode(f2)
+//	if err != nil {
+//		panic(err)
+//	}
+//	m := image.NewRGBA(bounds)
+//	white := color.RGBA{255, 255, 255, 255}
+//	draw.Draw(m, bounds, &image.Uniform{white}, image.ZP, draw.Src)
+//	draw.Draw(m, bounds, m1, image.ZP, draw.Src)
+//	draw.Draw(m, image.Rect(100, 200, 300, 600), m2, image.Pt(250, 60), draw.Src)
+//	err = jpeg.Encode(f3, m, &jpeg.Options{90})
+//	if err != nil {
+//		panic(err)
+//	}
+//	fmt.Printf("okn")
+//}
 
 // golang 图片处理，剪切，base64数据转换，文件存储
 // base64 -> file
@@ -376,18 +375,18 @@ func calcResizedRect(width int, src image.Rectangle, height int, centerAlign boo
 	return dst
 }
 
-func resizePic(img image.Image, width int, height int, keepRatio bool, fill int, centerAlign bool) image.Image {
-	outImg := image.NewRGBA(image.Rect(0, 0, width, height))
-	if !keepRatio {
-		draw.Draw(outImg, outImg.Bounds(), img, img.Bounds(), draw.Over)
-		return outImg
-	}
-
-	if fill != 0 {
-		fillColor := color.RGBA{R: uint8(fill), G: uint8(fill), B: uint8(fill), A: 255}
-		draw.Draw(outImg, outImg.Bounds(), &image.Uniform{C: fillColor}, image.Point{}, draw.Src)
-	}
-	dst := calcResizedRect(width, img.Bounds(), height, centerAlign)
-	draw.Draw(outImg, dst.Bounds(), img, img.Bounds(), draw.Over)
-	return outImg
-}
+//func resizePic(img image.Image, width int, height int, keepRatio bool, fill int, centerAlign bool) image.Image {
+//	outImg := image.NewRGBA(image.Rect(0, 0, width, height))
+//	if !keepRatio {
+//		draw.Draw(outImg, outImg.Bounds(), img, img.Bounds(), draw.Over)
+//		return outImg
+//	}
+//
+//	if fill != 0 {
+//		fillColor := color.RGBA{R: uint8(fill), G: uint8(fill), B: uint8(fill), A: 255}
+//		draw.Draw(outImg, outImg.Bounds(), &image.Uniform{C: fillColor}, image.Point{}, draw.Src)
+//	}
+//	dst := calcResizedRect(width, img.Bounds(), height, centerAlign)
+//	draw.Draw(outImg, dst.Bounds(), img, img.Bounds(), draw.Over)
+//	return outImg
+//}
