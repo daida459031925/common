@@ -93,7 +93,7 @@ func stop() {
 
 // StartServer windows 后台启动 start /b server.exe
 // linux 后台启动 nohup ./server.exe &
-func StartServer(ip string, port int, set *gset.Set) *gtcp.Server {
+func StartServer(ip string, port int, set *gset.Set, handlers map[string]*Handler) *gtcp.Server {
 	server := gtcp.NewServer(fmt.Sprintf("%s:%d", ip, port), func(conn *gtcp.Conn) {
 		defer func(conn *gtcp.Conn) {
 			err := conn.Close()
@@ -103,10 +103,22 @@ func StartServer(ip string, port int, set *gset.Set) *gtcp.Server {
 			}
 		}(conn)
 		for {
+			//这个地方估计不能那么写，或者说不能单独这么写，需要根据实际情况调整
 			data, err := conn.Recv(-1)
 			if len(data) > 0 {
 				fmt.Println(string(data))
 				set.Add(conn)
+
+				// 假设业务名称在数据中的某个位置,目前设定前30个字符串默认是这个
+				businessName := string(data[0:30])
+				handler, ok := handlers[businessName]
+				if !ok {
+					fmt.Sprintf("Unsupported business:%s", businessName)
+					continue
+				}
+				// 调用相应的处理程序
+				g := *handler
+				g.Handle(conn)
 			}
 			if err != nil {
 				set.Remove(conn)
@@ -123,4 +135,22 @@ func StartServer(ip string, port int, set *gset.Set) *gtcp.Server {
 	}()
 
 	return server
+}
+
+// AddHandler 添加需要处理的handler任务
+func AddHandler(handlers *map[string]*Handler, name string, handler *Handler) *map[string]*Handler {
+	h := *handlers
+	h[name] = handler
+	return handlers
+}
+
+// RemoveHandler 删除某个任务
+func RemoveHandler(handlers *map[string]*Handler, name string) *map[string]*Handler {
+	delete(*handlers, name)
+	return handlers
+}
+
+// Handler 定义一个结构用于其他调用我们这边的进行实现
+type Handler interface {
+	Handle(conn *gtcp.Conn)
 }
