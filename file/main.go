@@ -34,3 +34,7 @@ func NewConfig[a any](str string) (*a, error) {
 
 	return config, nil
 }
+
+func MkdirAll(filePath string) error {
+	return os.MkdirAll(filePath, os.ModePerm)
+}

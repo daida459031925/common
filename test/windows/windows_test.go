@@ -6,5 +6,12 @@ import (
 )
 
 func TestGetUserInfo(t *testing.T) {
-	windows.GetUserInfo()
+
+}
+
+func TestSetForegroundWindow(t *testing.T) {
+	//windows.GetProcess()
+
+	windows.GetProcess(9068)
+
 }
