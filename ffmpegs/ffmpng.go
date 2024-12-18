@@ -9,6 +9,7 @@ import (
 )
 
 //生成的sh或者其他linux下的内容记得需要使用chmod +x 文件   给上执行权限
+//https://github.com/datarhei/restreamer.git    灵感来自于
 
 // FFmpegParams 包含FFmpeg命令的参数
 type FFmpegParams struct {
@@ -55,15 +56,41 @@ func NewFFmpegProcess(params FFmpegParams) *FFmpegProcess {
 
 // Start 启动FFmpeg命令
 func (fp *FFmpegProcess) Start(params FFmpegParams) {
+	//cmd := exec.Command(params.Name,
+	//	"-i", params.InputURL,
+	//	"-c:v", "libx264",
+	//	"-c:a", "aac",
+	//	"-f", "hls",
+	//	"-hls_time", fmt.Sprintf("%d", params.HlsTime),
+	//	"-hls_list_size", fmt.Sprintf("%d", params.HlsListSize),
+	//	"-hls_flags", fmt.Sprintf("%d", params.HlsFlags),
+	//	"-y", params.OutputFile,
+	//)
+
 	cmd := exec.Command(params.Name,
+		"-loglevel", "level+info",
+		"-err_detect", "ignore_err",
+		"-y", "-fflags", "+genpts",
+		"-thread_queue_size", "512",
+		"-probesize", "5000000",
+		"-analyzeduration", "5000000",
+		"-timeout", "5000000",
+		"-rtsp_transport", "tcp",
 		"-i", params.InputURL,
-		"-c:v", "libx264",
-		"-c:a", "aac",
+		"-dn", "-sn",
+		"-map", "0:0",
+		"-codec:v", "copy",
+		"-an", "-metadata",
+		"title=http://192.168.20.172:48080/e0c9e586-4b61-4f4d-9e4e-3bd015615475/oembed.json",
+		"-metadata", "service_provider=datarhei-Restreamer",
 		"-f", "hls",
-		"-hls_time", fmt.Sprintf("%d", params.HlsTime),
-		"-hls_list_size", fmt.Sprintf("%d", params.HlsListSize),
-		"-hls_flags", fmt.Sprintf("%d", params.HlsFlags),
-		"-y", params.OutputFile,
+		"-start_number", "0",
+		"-hls_time", "2",
+		"-hls_list_size", "6",
+		"-hls_flags", "append_list+delete_segments+program_date_time+temp_file",
+		"-hls_delete_threshold", "4",
+		"-master_pl_publish_rate", "2",
+		params.OutputFile,
 	)
 
 	var out bytes.Buffer
