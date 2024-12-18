@@ -2,9 +2,12 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os/exec"
+	"sync"
 	"time"
 )
 
@@ -48,7 +51,7 @@ func NewFFmpegProcess(params FFmpegParams) *FFmpegProcess {
 	ffmpegProcess.Start(params)
 	ffmpegProcess.timer = time.AfterFunc(60*time.Second, func() {
 		if ffmpegProcess.active {
-			ffmpegProcess.Stop()
+			ffmpegProcess.Stop(params.InputURL)
 		}
 	})
 	return ffmpegProcess
@@ -108,10 +111,11 @@ func (fp *FFmpegProcess) Start(params FFmpegParams) {
 }
 
 // Stop 停止FFmpeg进程
-func (fp *FFmpegProcess) Stop() {
+func (fp *FFmpegProcess) Stop(url string) {
 	if fp.cmd != nil && fp.cmd.Process != nil {
 		err := fp.cmd.Process.Kill()
 		if err != nil {
+			ffmpegProcessMap.Delete(url)
 			fmt.Printf("Failed to kill FFmpeg process: %v\n", err)
 			return
 		}
@@ -126,25 +130,64 @@ func (fp *FFmpegProcess) ResetTimer() {
 	}
 }
 
-func handleFFmpegRequest(w http.ResponseWriter, r *http.Request, ffmpegProcess *FFmpegProcess) {
-	if r.Method != http.MethodGet {
+func handleFFmpegRequest(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
 		http.Error(w, "Only GET method is allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	if ffmpegProcess == nil {
-		params := DefaultParams()
+	body, err := io.ReadAll(r.Body)
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+
+		}
+	}(r.Body)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	var params FFmpegParams
+	err = json.Unmarshal(body, &params)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if params.Name == "" || params.InputURL == "" || params.OutputFile == "" {
+		params = DefaultParams()
+	}
+
+	fmt.Println(params.Name)
+	fmt.Println(params.InputURL)
+	fmt.Println(params.OutputFile)
+
+	var ffmpegProcess *FFmpegProcess
+
+	// 检查键 "arg1" 是否存在于 ffmpegProcessMap 中
+	value, ok := ffmpegProcessMap.Load(params.InputURL)
+	if ok {
+		fmt.Printf("键 'arg1' 存在于 ffmpegProcessMap 中，值为: %v\n", value)
+		ffmpegProcess = value.(*FFmpegProcess)
+	} else {
 		ffmpegProcess = NewFFmpegProcess(params)
+		ffmpegProcessMap.Store(params.InputURL, ffmpegProcess)
 	}
 
 	ffmpegProcess.ResetTimer()
-	w.Write([]byte("FFmpeg process triggered or reset timer."))
+	_, err = w.Write([]byte("FFmpeg process triggered or reset timer."))
+	if err != nil {
+		return
+	}
 }
 
+// ffmpegProcessMap用于保存正在执行的FFmpeg请求相关信息，键是请求标识，值是对应的FFmpegProcess实例
+var ffmpegProcessMap sync.Map
+
 func main() {
-	var ffmpegProcess *FFmpegProcess
 	http.HandleFunc("/trigger-ffmpeg", func(w http.ResponseWriter, r *http.Request) {
-		handleFFmpegRequest(w, r, ffmpegProcess)
+		handleFFmpegRequest(w, r)
 	})
 
 	fmt.Println("Server started on :38080")
