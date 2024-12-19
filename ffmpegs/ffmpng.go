@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"os/exec"
 	"sync"
 	"time"
@@ -115,11 +116,11 @@ func (fp *FFmpegProcess) Stop(url string) {
 	if fp.cmd != nil && fp.cmd.Process != nil {
 		err := fp.cmd.Process.Kill()
 		if err != nil {
-			ffmpegProcessMap.Delete(url)
 			fmt.Printf("Failed to kill FFmpeg process: %v\n", err)
 			return
 		}
 	}
+	ffmpegProcessMap.Delete(url)
 	fp.active = false
 }
 
@@ -132,7 +133,7 @@ func (fp *FFmpegProcess) ResetTimer() {
 
 func handleFFmpegRequest(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(w, "Only GET method is allowed", http.StatusMethodNotAllowed)
+		http.Error(w, "Only POST method is allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
@@ -163,12 +164,17 @@ func handleFFmpegRequest(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(params.InputURL)
 	fmt.Println(params.OutputFile)
 
+	err = os.Chmod(params.OutputFile, 0666) // 设置为所有者和其他用户都有读写权限
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+
 	var ffmpegProcess *FFmpegProcess
 
 	// 检查键 "arg1" 是否存在于 ffmpegProcessMap 中
 	value, ok := ffmpegProcessMap.Load(params.InputURL)
 	if ok {
-		fmt.Printf("键 'arg1' 存在于 ffmpegProcessMap 中，值为: %v\n", value)
+		fmt.Printf("key is the ffmpegProcessMap ，to: %v\n", value)
 		ffmpegProcess = value.(*FFmpegProcess)
 	} else {
 		ffmpegProcess = NewFFmpegProcess(params)
