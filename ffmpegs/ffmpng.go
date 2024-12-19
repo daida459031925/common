@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"sync"
 	"time"
 )
@@ -163,6 +164,22 @@ func handleFFmpegRequest(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(params.Name)
 	fmt.Println(params.InputURL)
 	fmt.Println(params.OutputFile)
+
+	// 获取文件所在目录路径
+	dir := filepath.Dir(params.OutputFile)
+	// 创建目录（如果不存在）
+	err = os.MkdirAll(dir, 0755)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// 创建文件（如果不存在）
+	_, err = os.OpenFile(params.OutputFile, os.O_CREATE|os.O_WRONLY, 0666)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	err = os.Chmod(params.OutputFile, 0666) // 设置为所有者和其他用户都有读写权限
 	if err != nil {
