@@ -1,1 +1,3 @@
-//生成的sh或者其他linux下的内容记得需要使用chmod +x 文件   给上执行权限  
+version https://git-lfs.github.com/spec/v1
+oid sha256:f8bb9e5d6fcf3ea42742f37effff4c910384daffe5738390c861b08814faa3cf
+size 1001
