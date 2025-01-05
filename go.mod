@@ -1,6 +1,6 @@
 module github.com/daida459031925/common
 
-go 1.22
+go 1.23.4
 
 require (
 	github.com/go-redis/redis/v8 v8.11.5
