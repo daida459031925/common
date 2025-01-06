@@ -97,7 +97,36 @@ func (fp *FFmpegProcess) Start(params FFmpegParams) {
 		"-master_pl_publish_rate", "2",
 		params.OutputFile,
 	)
-
+	cmd := exec.Command(params.Name,
+		"-loglevel", "info", // 简化日志级别设置
+		"-err_detect", "ignore_err",
+		"-y", "-fflags", "+genpts",
+		"-thread_queue_size", "512",
+		"-probesize", "5000000",
+		"-analyzeduration", "5000000",
+		"-timeout", "5000000",
+		"-rtsp_transport", "tcp",
+		"-i", params.InputURL,
+		"-dn", "-sn",
+		"-map", "0:0",
+		"-c:v", "libx264", // 指定视频编解码器为 H.264
+		"-preset", "fast", // 设置编码速度（可选：ultrafast, superfast, veryfast, faster, fast, medium, slow, slower, placebo）
+		"-crf", "23", // 设置恒定质量模式，数值越小质量越高（范围：0-51，默认23）
+		"-c:a", "aac", // 可选：指定音频编码器为 AAC
+		"-b:a", "128k", // 可选：设置音频比特率
+		"-an", // 如果不需要音频，可以保留 -an
+		"-metadata",
+		"title=http://192.168.20.172:48080/e0c9e586-4b61-4f4d-9e4e-3bd015615475/oembed.json",
+		"-metadata", "service_provider=datarhei-Restreamer",
+		"-f", "hls",
+		"-start_number", "0",
+		"-hls_time", "2",
+		"-hls_list_size", "6",
+		"-hls_flags", "append_list+delete_segments+program_date_time+temp_file",
+		"-hls_delete_threshold", "4",
+		"-master_pl_publish_rate", "2",
+		params.OutputFile,
+	)
 	var out bytes.Buffer
 	var stderr bytes.Buffer
 	cmd.Stdout = &out
